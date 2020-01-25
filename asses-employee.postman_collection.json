@@ -1,0 +1,125 @@
+{
+	"variables": [],
+	"info": {
+		"name": "asses-employee",
+		"_postman_id": "dfed3612-23b3-7791-8fae-8ea8a518d2f4",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Post employee in db",
+			"request": {
+				"url": "http://localhost:8081/getEmployees",
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "3e530b1f-7da3-47e9-96a6-de23cb561dd3",
+						"description": "",
+						"disabled": true
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"id\": \"10\",\n        \"employee_name\": \"Tiger Nixon\",\n        \"employee_salary\": \"320800\",\n        \"employee_age\": \"61\",\n        \"profile_image\": \"\"\n    },\n    {\n        \"id\": \"20\",\n        \"employee_name\": \"Garrett Winters\",\n        \"employee_salary\": \"170750\",\n        \"employee_age\": \"63\",\n        \"profile_image\": \"\"\n    }\n]"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get employee by Id",
+			"request": {
+				"url": "http://localhost:8081/getEmployees/12",
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "3e530b1f-7da3-47e9-96a6-de23cb561dd3",
+						"description": "",
+						"disabled": true
+					},
+					{
+						"key": "client_id",
+						"value": "12345",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "client_secret",
+						"value": "jkduag",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"vendor_id\":\"123456789\",\r\n  \"driver_id\":\"mc-drv\",\r\n  \"vehicle_id\":\"mc-veh\",\r\n  \"status\":\"active\",\r\n  \"vendor_shipper_id\":\"vdi-1\",\r\n  \"vendor_consignee_id\":\"vdi-2\",\r\n  \"dispatch_stops\":[\r\n    {\r\n      \"vendor_id\":\"123456\",\r\n      \"number\":2,\r\n      \"status\":\"available\",\r\n      \"type\":\"UL\"\r\n    }\r\n  ]\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Post employee - sys api",
+			"request": {
+				"url": "localhost:8089/employees",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					},
+					{
+						"key": "client_id",
+						"value": "dummy",
+						"description": ""
+					},
+					{
+						"key": "client_secret",
+						"value": "dummy1",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n  {\n    \"id\": \"1\",\n    \"employee_name\": \"Tiger Nixon\",\n    \"employee_salary\": \"320800\",\n    \"employee_age\": \"61\",\n    \"profile_image\": \"\"\n  },\n  {\n    \"id\": \"2\",\n    \"employee_name\": \"Garrett Winters\",\n    \"employee_salary\": \"170750\",\n    \"employee_age\": \"63\",\n    \"profile_image\": \"\"\n  }\n]"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get employee by Id - sys api",
+			"request": {
+				"url": "localhost:8089/employees/2",
+				"method": "GET",
+				"header": [
+					{
+						"key": "client_secret",
+						"value": "dummy1",
+						"description": ""
+					},
+					{
+						"key": "client_id",
+						"value": "dummy",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
