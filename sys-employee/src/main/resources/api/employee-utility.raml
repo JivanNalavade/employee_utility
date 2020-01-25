@@ -1,0 +1,58 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/23149afe-c2f7-4606-b38f-191998b9f510/ # 
+title: Employee-utility
+
+uses:
+  employee: DataTypes/Employeelibrary.raml
+
+traits:
+  pagination:
+  client-credentials-required:
+    headers:
+      client_id:
+        type: string
+        example: 7b404180fbb84b099179a4126a9576ff
+      client_secret:
+        type: string
+        example: e241f4aa3eca4b2a8FA67A2FEF5754F8
+
+
+/employees:
+  post:
+    is: [client-credentials-required]
+    body:
+      application/json:
+        type: employee.employees
+        example : !include Examples/employees.json
+
+    responses:
+      201:
+        body:
+          application/json:
+            example: |
+                {"message": "Records Added successfully"}
+
+  get:
+    is: [client-credentials-required]
+    responses:
+      200:
+        body:
+          application/json:
+            type: employee.employees
+            example : !include Examples/employees.json
+
+  /{id}:
+    get:
+      is: [client-credentials-required]
+      responses:
+        200:
+          body:
+            application/json:
+              type: employee.employee
+              example : !include Examples/employee.json
+      
+        
+
+      
+    
+

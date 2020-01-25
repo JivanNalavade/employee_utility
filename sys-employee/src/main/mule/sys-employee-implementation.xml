@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+	<flow name="create-employees-flow" doc:id="c4b72a25-40e8-4bd2-a829-d589012f7cc1" >
+		<ee:transform doc:name="Transform Message" doc:id="6efabe40-3b34-4210-8bb1-9d3e29b0d7f3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map((item,index)->{
+    id: item.id as Number,
+    employee_name: item.employee_name,
+    employee_salary: item.employee_salary as Number,
+    employee_age: item.employee_age as Number,
+    profile_image: item.profile_image
+})]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="sys-employee-implementationBatch_Job" doc:id="529dd41d-ae2d-4835-8b50-1f22d55542c0" >
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="1728bca7-3a85-4805-81e1-9dda28968c83" >
+					<db:insert doc:name="Insert" doc:id="451c8e2f-e3a6-47fe-8a4b-355c27595926" config-ref="Database_Config">
+						<db:sql >INSERT INTO  Employee(id, employee_name, employee_salary, employee_age, profile_image)
+VALUES (:id, :employee_name, :employee_salary, :employee_age, :profile_image)</db:sql>
+						<db:input-parameters ><![CDATA[#[{
+	id: payload.id,
+    employee_name: payload.employee_name,
+    employee_salary: payload.employee_salary,
+    employee_age: payload.employee_age,
+    profile_image: payload.profile_image
+}]]]></db:input-parameters>
+					</db:insert>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+		<!-- <db:bulk-insert doc:name="Bulk insert" doc:id="802cee5d-468d-43e5-b150-6df2b65cb918" config-ref="Database_Config">
+			<db:sql>INSERT INTO  Employee(id, employee_name, employee_salary, employee_age, profile_image)
+VALUES (:id, :employee_name, :employee_salary, :employee_age, :profile_image)</db:sql>
+		</db:bulk-insert> -->
+		<ee:transform doc:name="Transform Message" doc:id="dcb8e942-e2cc-4731-9a2e-4c19f3000242">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	isStatus: true
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="get-employee-byId-subflow" doc:id="e84761b3-4e8a-476e-b42c-05136d1aa30b" >
+		<set-variable value="#[attributes.uriParams.id]" doc:name="Set Variable" doc:id="3ef4cc27-2f28-489f-92f9-d1ebbac44e91" variableName="employee_Id"/>
+		<db:select doc:name="Select" doc:id="d4474065-e459-485a-b8e0-d08bf91f5e85" config-ref="Database_Config">
+			<db:sql >Select * from Employee where id = :id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id: vars.employee_Id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="972ab55a-8302-431d-abe5-411b281de000" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

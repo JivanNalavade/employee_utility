@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="378e9e7a-7cfc-40e3-a62d-3f1ae6734680" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="290d5fd4-d0b5-4d18-a403-924c72ff842e" >
+		<http:request-connection host="dummy.restapiexample.com" />
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration1" doc:name="HTTP Request configuration" doc:id="0fc21abc-3892-45ef-9da5-7145d892786c" >
+		<http:request-connection host="localhost" port="8089" />
+	</http:request-config>
+	<email:smtp-config name="Email_SMTP1" doc:name="Email SMTP" doc:id="43c80b13-45ad-45f0-a3b5-63f3b6d8bfd1" >
+		<email:smtp-connection host="smtp.gmail.com" user="jivan.nalavade@apisero.com" password="${secure::email.password}">
+			<email:properties >
+				<email:property key="mail.smtp.starttls.enable" value="true" />
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="33638a2d-b0e0-4bd4-a0dc-aa308c73f1b5" file="properties/credentials.yaml" key="1234567812345678" />
+	<flow name="exp-employeeFlow" doc:id="a47ae0d1-2e03-4a7e-ab87-c85bd53afb39" >
+		<http:listener doc:name="Listener" doc:id="0a74ad9b-1e2f-4408-a052-bd347a337250" config-ref="HTTP_Listener_config" path="/getEmployees">
+			<http:error-response >
+				<http:body ><![CDATA[#[output application/json --- payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<http:request method="GET" doc:name="Request" doc:id="4c5c1b15-9344-4573-b1d9-9672a63ad6b5" config-ref="HTTP_Request_configuration" path="/api/v1/employees"/>
+		<ee:transform doc:name="Transform Message" doc:id="c2f48e7b-7c95-4a5b-a570-2f66da2451cf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="employees" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.data]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<os:store doc:name="Store" doc:id="1aa12390-ccac-4ada-98b6-b750b335e0c1" key="employeeIds">
+			<os:value ><![CDATA[#[payload.data.id]]]></os:value>
+		</os:store>
+		<http:request method="POST" doc:name="Request" doc:id="3f15cfc9-3555-4867-a336-418718c35406" config-ref="HTTP_Request_configuration1" path="/api/employees">
+			<http:body ><![CDATA[#[payload.data]]]></http:body>
+		</http:request>
+		<choice doc:name="Choice" doc:id="0352d8e9-210a-4a9d-9f39-fc3566cbb737">
+			<when expression="#[payload.isStatus == true]" >
+				<flow-ref doc:name="Flow Reference" doc:id="b5e49dcd-87d7-47d6-b110-6d1fe271b95e" name="exp-employee-send-email"/>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" doc:id="7bba0c44-8755-4a2b-8da1-afc128525df9" message="Payload from system api is :: #[payload]"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<sub-flow name="exp-employee-send-email" doc:id="7895ca21-6597-4f56-a8fd-8ea332116b66" >
+		<ee:transform doc:name="Transform Message" doc:id="9cb42366-4175-4c59-b36d-0f72740a4aa3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+vars.employees]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<try doc:name="Try" doc:id="1aeabe83-559a-45cf-90fa-da02997c27df" >
+			<email:send doc:name="Send" doc:id="aa76d5e6-76b8-4ef3-80c0-b2f1668b5b4d" config-ref="Email_SMTP1" fromAddress="jivan.nalavade@apisero.com" subject="abc">
+			<email:to-addresses>
+				<email:to-address value="jivan.nalavade@apisero.com" />
+			</email:to-addresses>
+			<email:headers><![CDATA[#[output application/java
+---
+{
+	"version" : "TLS1_2",
+	"cipher" : "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384_P384"
+}]]]></email:headers>
+				<email:body contentType="text/plain" />
+		</email:send>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="d262f63f-a149-4bd8-bc76-e541219b75b5" >
+					<ee:transform doc:name="Transform Message" doc:id="1f4e2325-3f0c-43a9-bea2-6f1b0c2a15bf" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	isSucess: false,
+	error: "Error while sending the mail"
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<flow name="exp-employee_get_emp_byId" doc:id="73b892a5-a3b8-453e-b285-427f39c92e31" >
+		<http:listener doc:name="Listener" doc:id="9fae49f9-4b16-4094-b097-dca85d46f7d0" config-ref="HTTP_Listener_config" path="/getEmployee/{id}"/>
+		<set-variable value="#[attributes.uriParams.id]" doc:name="Set Variable" doc:id="5168e69f-1842-4a00-9bee-fa66b4ca7a60" variableName="employeeId"/>
+		<http:request method="GET" doc:name="Request" doc:id="7c648c94-bc24-4591-be59-263cf3d947d4" config-ref="HTTP_Request_configuration1" path="/api/employees/id" responseTimeout="1000000">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"id" : vars.employeeId
+}]]]></http:uri-params>
+		</http:request>
+	</flow>
+</mule>

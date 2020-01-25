@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="063abf53-b348-4a77-9aa7-ac69150bab35" >
+		<db:my-sql-connection host="www.db4free.net" port="3306" user="${secure::db.username}" password="${secure::db.password}" database="${secure::db.database}"/>
+	</db:config>
+	<!-- <api-gateway:autodiscovery apiId="15973892" doc:name="API Autodiscovery" doc:id="d0d0f0e3-4c04-430a-98c2-eb36f4e2961f" flowRef="employee-utility-main" /> -->
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="e698a78b-365f-4093-a47a-02e02c866465" file="properties/credentials.yaml" key="1234567812345678" />
+</mule>
